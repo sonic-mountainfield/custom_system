@@ -1,32 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const API_URL = "https://sheetdb.io/api/v1/ihm71us1n06fy";
 
-export default function App() {
+export default function YueYeApp() {
   const [phone, setPhone] = useState('');
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
 
-  // 登入查詢
+  // 1. 登入邏輯：查詢手機號碼
   const handleLogin = async () => {
-    if (!phone) return alert("請輸入手機號碼");
     setLoading(true);
     try {
       const response = await fetch(`${API_URL}/search?phone=${phone}`);
       const data = await response.json();
-      if (data && data.length > 0) {
+      if (data.length > 0) {
         setUserData(data[0]);
       } else {
         alert("找不到此手機號碼，請聯繫岳野登山管理員。");
       }
     } catch (error) {
-      alert("連線失敗，請檢查網路");
+      console.error("讀取資料失敗", error);
     }
     setLoading(false);
   };
 
-  // 確認需求
+  // 2. 確認邏輯：回傳確認狀態到 Google Sheets
   const handleConfirm = async () => {
     try {
       await fetch(`${API_URL}/phone/${userData.phone}`, {
@@ -35,71 +34,82 @@ export default function App() {
         body: JSON.stringify({ data: { confirmed: 'Yes' } })
       });
       setConfirmed(true);
-      alert("感謝您的確認！");
+      alert("感謝您的確認！我們已收到您的回覆。");
     } catch (error) {
-      alert("確認失敗");
+      alert("確認失敗，請稍後再試。");
     }
   };
 
+  // --- 第一頁：登入介面 ---
   if (!userData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-100" style={{backgroundImage: "url('https://images.unsplash.com/photo-1491884662610-dfcd28f30ad1?q=80&w=2000')", backgroundSize: 'cover'}}>
-        <div className="bg-white/90 p-8 rounded-2xl shadow-2xl w-full max-w-md backdrop-blur-sm">
-          <h1 className="text-3xl font-bold text-emerald-800 text-center">岳野登山公司</h1>
-          <p className="text-slate-600 text-center mb-8 font-medium">客戶管理系統</p>
-          <div className="space-y-4">
-            <input 
-              type="tel" 
-              placeholder="請輸入手機號碼" 
-              className="w-full p-4 border-2 border-emerald-100 rounded-xl focus:border-emerald-500 outline-none text-lg text-center"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-            <button 
-              onClick={handleLogin}
-              className="w-full bg-emerald-600 text-white font-bold py-4 rounded-xl hover:bg-emerald-700 transition-all shadow-lg"
-              disabled={loading}
-            >
-              {loading ? "查詢中..." : "進入我的行程"}
-            </button>
-          </div>
+      <div className="min-h-screen bg-cover bg-center flex items-center justify-center" style={{backgroundImage: "url('https://images.unsplash.com/photo-1491884662610-dfcd28f30ad1?auto=format&fit=crop&q=80&w=1920')"}}>
+        <div className="bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-xl max-w-sm w-full text-center">
+          <h1 className="text-2xl font-bold text-slate-800">岳野登山公司</h1>
+          <p className="text-slate-500 mb-6">客戶行程查詢系統</p>
+          <input 
+            type="text" 
+            placeholder="請輸入手機號碼" 
+            className="w-full p-3 border rounded-lg mb-4 text-center focus:ring-2 focus:ring-emerald-500 outline-none"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+          <button 
+            onClick={handleLogin}
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg transition"
+            disabled={loading}
+          >
+            {loading ? "查詢中..." : "進入我的行程"}
+          </button>
         </div>
       </div>
     );
   }
 
+  // --- 第二頁：內容介面 ---
   return (
-    <div className="min-h-screen bg-emerald-50 p-4">
-      <div className="max-w-xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden mt-10">
-        <div className="bg-emerald-600 p-8 text-white">
-          <h2 className="text-2xl font-bold text-center">親愛的 {userData.name} 您好</h2>
-          <p className="text-center opacity-80 mt-2">請確認您的登山行程細節</p>
+    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
+      <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-lg overflow-hidden">
+        <div className="bg-emerald-600 p-6 text-white text-center">
+          <h2 className="text-xl font-bold">親愛的 {userData.name} 先生/小姐</h2>
+          <p className="opacity-90">歡迎查看您的專屬行程</p>
         </div>
-        <div className="p-8 space-y-8">
-          <div>
-            <h3 className="font-bold text-emerald-800 mb-3 text-lg underline underline-offset-8">旅遊項目清單</h3>
-            <p className="bg-slate-50 p-4 rounded-xl text-slate-700 leading-relaxed border border-emerald-100">{userData.items}</p>
-          </div>
-          <div>
-            <h3 className="font-bold text-emerald-800 mb-3 text-lg underline underline-offset-8">特殊需求備註</h3>
-            <div className="flex items-center space-x-3 bg-slate-50 p-4 rounded-xl">
-              <span className="text-emerald-600">✓</span>
-              <span className="text-slate-700">{userData.requirements}</span>
+        
+        <div className="p-6 space-y-6">
+          {/* 旅遊項目 */}
+          <section>
+            <h3 className="font-bold text-slate-700 mb-2 border-l-4 border-emerald-500 pl-2">購買項目清單</h3>
+            <div className="bg-emerald-50 p-4 rounded-xl text-emerald-900 leading-relaxed">
+              {userData.items}
             </div>
-          </div>
-          <div className="bg-slate-900 p-6 rounded-2xl text-white">
-            <div className="flex justify-between mb-2 opacity-70"><span>總金額</span><span>${userData.total}</span></div>
-            <div className="flex justify-between mb-4 opacity-70"><span>已付訂金</span><span>-${userData.deposit}</span></div>
-            <div className="flex justify-between text-2xl font-bold text-emerald-400 pt-4 border-t border-slate-700">
+          </section>
+
+          {/* 特殊需求 */}
+          <section>
+            <h3 className="font-bold text-slate-700 mb-2 border-l-4 border-emerald-500 pl-2">特殊需求確認</h3>
+            <div className="flex items-center space-x-2 text-slate-600">
+              <input type="checkbox" checked readOnly className="w-5 h-5 accent-emerald-500" />
+              <span>{userData.requirements}</span>
+            </div>
+          </section>
+
+          {/* 金額明細 */}
+          <section className="bg-slate-100 p-6 rounded-2xl">
+            <div className="flex justify-between mb-2"><span>總金額</span><span>${userData.total}</span></div>
+            <div className="flex justify-between mb-2 text-slate-500"><span>已付訂金</span><span>-${userData.deposit}</span></div>
+            <hr className="my-2 border-slate-300" />
+            <div className="flex justify-between text-xl font-bold text-red-600">
               <span>待付尾款</span><span>${userData.balance}</span>
             </div>
-          </div>
+          </section>
+
+          {/* 確認按鈕 */}
           <button 
             onClick={handleConfirm}
             disabled={confirmed || userData.confirmed === 'Yes'}
-            className={`w-full py-5 rounded-2xl font-bold text-xl transition-all shadow-xl ${confirmed || userData.confirmed === 'Yes' ? 'bg-slate-300 text-slate-500' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
+            className={`w-full py-4 rounded-xl font-bold text-lg transition ${confirmed || userData.confirmed === 'Yes' ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg'}`}
           >
-            {confirmed || userData.confirmed === 'Yes' ? "✓ 已完成需求確認" : "確認行程與金額無誤"}
+            {confirmed || userData.confirmed === 'Yes' ? "✓ 需求已確認無誤" : "我已確認需求與金額無誤"}
           </button>
         </div>
       </div>
