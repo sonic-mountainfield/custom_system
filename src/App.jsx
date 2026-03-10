@@ -12,7 +12,7 @@ export default function App() {
     if (!phone) return alert("請輸入手機號碼");
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}&search?phone=${phone}`);
+     const response = await fetch(`${API_URL.split('?')[0]}?phone=${phone}`);
       const data = await response.json();
       if (data && data.length > 0) {
         setUserData(data[0]);
