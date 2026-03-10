@@ -14,7 +14,6 @@ export default function App() {
     if (!phone) return alert("請輸入手機號碼");
     setLoading(true);
     try {
-      // 搜尋手機號碼對應的資料
       const response = await fetch(`${API_URL}/search?phone=${phone}`);
       const data = await response.json();
       
@@ -30,10 +29,9 @@ export default function App() {
     setLoading(false);
   };
 
-  // 2. 確認邏輯：回傳確認狀態到 Google Sheets
+  // 2. 確認邏輯：更新 Google Sheets 狀態
   const handleConfirm = async () => {
     try {
-      // 使用手機號碼作為 ID 更新該筆資料的 confirmed 欄位
       const response = await fetch(`${API_URL}/phone/${userData.phone}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -56,10 +54,9 @@ export default function App() {
     return (
       <div className="min-h-screen bg-cover bg-center flex items-center justify-center p-4" 
            style={{backgroundImage: "url('https://images.unsplash.com/photo-1491884662610-dfcd28f30ad1?auto=format&fit=crop&q=80&w=1920')"}}>
-        <div className="bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center">
+        <div className="bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center border border-white/20">
           <h1 className="text-3xl font-bold text-emerald-800 mb-1">岳野登山公司</h1>
           <p className="text-slate-600 mb-8 font-medium">客戶管理系統</p>
-          
           <input 
             type="tel" 
             placeholder="請輸入手機號碼" 
@@ -68,7 +65,6 @@ export default function App() {
             onChange={(e) => setPhone(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
           />
-          
           <button 
             onClick={handleLogin}
             disabled={loading}
@@ -84,34 +80,51 @@ export default function App() {
   // --- 畫面 B：行程確認介面 ---
   return (
     <div className="min-h-screen bg-emerald-50 p-4 md:p-8 flex justify-center">
-      <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl overflow-hidden">
-        {/* 頭部標題 */}
+      <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-emerald-100">
         <div className="bg-emerald-600 p-8 text-white text-center">
-          <h2 className="text-2xl font-bold">親愛的 {userData.name} 先生/小姐</h2>
-          <p className="opacity-90 mt-2">歡迎查看您的登山行程與需求</p>
+          <h2 className="text-2xl font-bold">親愛的 {userData.name} 您好</h2>
+          <p className="opacity-90 mt-2 text-sm tracking-widest">歡迎查看您的專屬登山行程</p>
         </div>
         
         <div className="p-6 md:p-10 space-y-8">
-          {/* 旅遊項目 */}
           <section>
             <h3 className="font-bold text-emerald-800 mb-3 text-lg border-l-4 border-emerald-500 pl-3">購買項目清單</h3>
-            <div className="bg-emerald-50/50 p-5 rounded-2xl text-slate-700 leading-relaxed border border-emerald-100 text-lg">
+            <div className="bg-emerald-50/50 p-5 rounded-2xl text-slate-700 leading-relaxed border border-emerald-100">
               {userData.items || "尚無項目資料"}
             </div>
           </section>
 
-          {/* 特殊需求 */}
           <section>
-            <h3 className="font-bold text-emerald-800 mb-3 text-lg border-l-4 border-emerald-500 pl-3">特殊需求確認</h3>
+            <h3 className="font-bold text-emerald-800 mb-3 text-lg border-l-4 border-emerald-500 pl-3">特殊需求備註</h3>
             <div className="flex items-start space-x-3 bg-slate-50 p-5 rounded-2xl border border-slate-100">
-              <input 
-                type="checkbox" 
-                checked 
-                readOnly 
-                className="w-6 h-6 mt-1 accent-emerald-600" 
-              />
-              <span className="text-slate-700 text-lg">{userData.requirements || "無特殊需求備註"}</span>
+              <input type="checkbox" checked readOnly className="w-6 h-6 mt-1 accent-emerald-600" />
+              <span className="text-slate-700">{userData.requirements || "無特別備註"}</span>
             </div>
           </section>
 
-          {/* 金額明細 */}
+          <section className="bg-slate-900 p-8 rounded-3xl text-white shadow-2xl">
+            <div className="flex justify-between mb-3 opacity-80"><span>總金額</span><span>${userData.total}</span></div>
+            <div className="flex justify-between mb-4 opacity-80 text-emerald-400"><span>已付訂金</span><span>-${userData.deposit}</span></div>
+            <div className="h-px bg-slate-700 w-full mb-4"></div>
+            <div className="flex justify-between text-2xl font-extrabold">
+              <span>待付尾款</span><span className="text-yellow-400">${userData.balance}</span>
+            </div>
+          </section>
+
+          <button 
+            onClick={handleConfirm}
+            disabled={confirmed || userData.confirmed === 'Yes'}
+            className={`w-full py-5 rounded-2xl font-bold text-xl transition-all shadow-xl active:scale-95 ${
+              confirmed || userData.confirmed === 'Yes' 
+                ? 'bg-slate-300 text-slate-500 cursor-not-allowed' 
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-200'
+            }`}
+          >
+            {confirmed || userData.confirmed === 'Yes' ? "✓ 需求已確認無誤" : "我已確認需求與金額無誤"}
+          </button>
+          <p className="text-center text-slate-400 text-xs">岳野登山公司管理系統 v1.0</p>
+        </div>
+      </div>
+    </div>
+  );
+}
