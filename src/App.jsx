@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-// API 網址，移除多餘參數以確保搜尋精確
+// API 網址
 const API_URL = "https://sheetdb.io/api/v1/ihm71us1n06fy";
 
 export default function App() {
@@ -9,20 +9,14 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
 
-  // 1. 登入邏輯 (包含精確匹配檢查)
   const handleLogin = async () => {
     if (!phone) return alert("請輸入手機號碼");
     setLoading(true);
     try {
-      // 使用 SheetDB 的精確過濾語法 ?phone=...
       const response = await fetch(`${API_URL}?phone=${phone}`);
       const data = await response.json();
-      
       if (data && data.length > 0) {
-        // 二次檢查：在回傳結果中找尋與輸入號碼完全相符的資料
-        // 防止 API 因格式問題回傳錯誤的第一筆資料
         const foundUser = data.find(user => String(user.phone).trim() === String(phone).trim());
-        
         if (foundUser) {
           setUserData(foundUser);
         } else {
@@ -37,11 +31,9 @@ export default function App() {
     setLoading(false);
   };
 
-  // 2. 回報狀態邏輯 (確認/錯誤)
   const handleUpdateStatus = async (status) => {
     const confirmMsg = status === 'Yes' ? "確認所有行程與帳務資料正確？" : "回報資料有誤並請客服修正？";
     if (!window.confirm(confirmMsg)) return;
-
     try {
       const response = await fetch(`${API_URL}/phone/${userData.phone}`, {
         method: 'PATCH',
@@ -57,7 +49,6 @@ export default function App() {
     }
   };
 
-  // --- 登入介面 ---
   if (!userData) {
     return (
       <div className="min-h-screen bg-slate-200 flex items-center justify-center p-4">
@@ -72,11 +63,7 @@ export default function App() {
             onChange={(e) => setPhone(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
           />
-          <button 
-            onClick={handleLogin}
-            disabled={loading}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg active:scale-95"
-          >
+          <button onClick={handleLogin} disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg active:scale-95">
             {loading ? "查詢中..." : "查看我的行程"}
           </button>
         </div>
@@ -84,7 +71,6 @@ export default function App() {
     );
   }
 
-  // --- 計算邏輯 (強制數值轉換) ---
   const n = (val) => {
     if (!val) return 0;
     const num = parseFloat(String(val).replace(/[^0-9.-]/g, ""));
@@ -99,7 +85,7 @@ export default function App() {
   const balance = total_amount - dep;
 
   return (
-    <div className="min-h-screen bg-slate-100 p-4 md:p-8 flex justify-center text-slate-700">
+    <div className="min-h-screen bg-slate-100 p-4 md:p-8 flex justify-center text-slate-700 font-sans">
       <div className="max-w-2xl w-full bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-emerald-800 p-10 text-white text-center">
@@ -107,47 +93,60 @@ export default function App() {
           <p className="opacity-60 text-xs tracking-[0.3em] font-light">CUSTOMER ITINERARY & INVOICE</p>
         </div>
 
-        <div className="p-6 md:p-10 space-y-8 flex-grow">
+        <div className="p-6 md:p-10 space-y-10 flex-grow">
           
-          {/* 行程資訊 - 已改為立體圖塊 */}
+          {/* 1. 行程資訊 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* 參加團名圖塊 */}
-            <div className="bg-white shadow-md border-l-[6px] border-emerald-600 rounded-xl p-5 flex flex-col justify-center transition-all hover:shadow-lg">
+            <div className="bg-white shadow-md border-l-[6px] border-emerald-600 rounded-xl p-5 transition-all hover:shadow-lg">
               <p className="text-[11px] text-emerald-700 font-black mb-1 uppercase tracking-wider">參加團名</p>
               <p className="font-bold text-xl text-slate-800">{userData.group || "---"}</p>
             </div>
-            
-            {/* 參加日期圖塊 */}
-            <div className="bg-white shadow-md border-l-[6px] border-emerald-600 rounded-xl p-5 flex flex-col justify-center transition-all hover:shadow-lg">
+            <div className="bg-white shadow-md border-l-[6px] border-emerald-600 rounded-xl p-5 transition-all hover:shadow-lg">
               <p className="text-[11px] text-emerald-700 font-black mb-1 uppercase tracking-wider">參加日期</p>
               <p className="font-bold text-xl text-slate-800">{userData.date || "---"}</p>
             </div>
-            
-            {/* 寄送地址圖塊 */}
-            <div className="bg-white shadow-md border-l-[6px] border-emerald-600 rounded-xl p-5 md:col-span-2 flex flex-col justify-center transition-all hover:shadow-lg">
+            <div className="bg-white shadow-md border-l-[6px] border-emerald-600 rounded-xl p-5 md:col-span-2 transition-all hover:shadow-lg">
               <p className="text-[11px] text-emerald-700 font-black mb-1 uppercase tracking-wider">證書寄送地址</p>
               <p className="font-bold text-lg text-slate-800 leading-relaxed">{userData.address || "---"}</p>
             </div>
           </div>
 
-          {/* 需求與備註 - 已改為立體圖塊 */}
-          <div className="space-y-5">
-            <div className="bg-white shadow-md border-l-[6px] border-emerald-400 rounded-xl p-5 transition-all hover:shadow-lg">
-              <p className="text-[11px] font-black text-emerald-600 uppercase tracking-wider">額外加購項目</p>
-              <div className="text-slate-800 font-bold text-base mt-2">
-                {userData.extra_item || "無"}
+          {/* 2. 新增：住宿安排 (圖塊顯示) */}
+          <div className="space-y-4">
+            <p className="text-sm font-bold text-slate-800 flex items-center">
+              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>住宿安排確認
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* 東京住宿 */}
+              <div className="bg-white shadow-md border-l-[6px] border-sky-500 rounded-xl p-5 transition-all hover:shadow-lg">
+                <p className="text-[11px] font-black text-sky-600 uppercase tracking-wider">東京住宿 (房型 / 室友)</p>
+                <div className="text-slate-800 font-bold text-base mt-2 leading-relaxed">
+                  {userData.tokyo_room || "尚未分配"}
+                </div>
               </div>
-            </div>
-            
-            <div className="bg-white shadow-md border-l-[6px] border-orange-400 rounded-xl p-5 transition-all hover:shadow-lg">
-              <p className="text-[11px] font-black text-orange-600 uppercase tracking-wider">特殊需求與備註</p>
-              <div className="text-slate-800 font-bold text-base mt-2">
-                {userData.requirements || "無特別要求"}
+              {/* 河口湖住宿 */}
+              <div className="bg-white shadow-md border-l-[6px] border-indigo-500 rounded-xl p-5 transition-all hover:shadow-lg">
+                <p className="text-[11px] font-black text-indigo-600 uppercase tracking-wider">河口湖住宿 (房型 / 室友)</p>
+                <div className="text-slate-800 font-bold text-base mt-2 leading-relaxed">
+                  {userData.kawaguchiko_room || "尚未分配"}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* 帳務區 */}
+          {/* 3. 需求與備註 */}
+          <div className="space-y-5">
+            <div className="bg-white shadow-md border-l-[6px] border-emerald-400 rounded-xl p-5 transition-all hover:shadow-lg">
+              <p className="text-[11px] font-black text-emerald-600 uppercase tracking-wider">額外加購項目</p>
+              <div className="text-slate-800 font-bold text-base mt-2">{userData.extra_item || "無"}</div>
+            </div>
+            <div className="bg-white shadow-md border-l-[6px] border-orange-400 rounded-xl p-5 transition-all hover:shadow-lg">
+              <p className="text-[11px] font-black text-orange-600 uppercase tracking-wider">特殊需求與備註</p>
+              <div className="text-slate-800 font-bold text-base mt-2">{userData.requirements || "無特別要求"}</div>
+            </div>
+          </div>
+
+          {/* 4. 帳務區 */}
           <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-emerald-900/10">
             <div className="space-y-4 text-sm">
               <div className="flex justify-between opacity-50"><span>基礎團費</span><span>${fee.toLocaleString()}</span></div>
@@ -160,42 +159,31 @@ export default function App() {
               </div>
               <div className="flex justify-between opacity-50"><span>已收訂金</span><span>-${dep.toLocaleString()}</span></div>
             </div>
-
             <div className="flex justify-between items-end mt-10 pt-8 border-t border-white/10">
               <div className="text-slate-500 text-xs font-black uppercase tracking-widest mb-1">待付尾款 Balance</div>
-              <div className="text-5xl font-black text-yellow-400 font-mono tracking-tighter">
-                ${balance.toLocaleString()}
-              </div>
+              <div className="text-5xl font-black text-yellow-400 font-mono tracking-tighter">${balance.toLocaleString()}</div>
             </div>
           </div>
 
-          {/* 操作 */}
+          {/* 5. 操作按鈕 */}
           <div className="flex flex-col gap-4 pt-4">
             <button 
               onClick={() => handleUpdateStatus('Yes')}
               disabled={confirmed || userData.confirmed === 'Yes'}
               className={`w-full py-6 rounded-3xl font-bold text-2xl transition-all shadow-xl active:scale-95 ${
-                confirmed || userData.confirmed === 'Yes' 
-                ? 'bg-slate-100 text-slate-400 shadow-none' 
-                : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                confirmed || userData.confirmed === 'Yes' ? 'bg-slate-100 text-slate-400 shadow-none' : 'bg-emerald-600 text-white hover:bg-emerald-700'
               }`}
             >
               {confirmed || userData.confirmed === 'Yes' ? "✓ 已完成資料確認" : "核對無誤，送出確認"}
             </button>
-            
             {!confirmed && userData.confirmed !== 'Yes' && (
-              <button 
-                onClick={() => handleUpdateStatus('Error')}
-                className="w-full py-2 text-slate-400 font-bold text-sm hover:text-red-500 transition-colors"
-              >
+              <button onClick={() => handleUpdateStatus('Error')} className="w-full py-2 text-slate-400 font-bold text-sm hover:text-red-500 transition-colors">
                 資料有誤？點此告知客服修正
               </button>
             )}
           </div>
           
-          <p className="text-center text-slate-300 text-[10px] font-black tracking-[0.4em] uppercase pt-6">
-            Secure Service by YueYe Mountainfield
-          </p>
+          <p className="text-center text-slate-300 text-[10px] font-black tracking-[0.4em] uppercase pt-6">Secure Service by YueYe Mountainfield</p>
         </div>
       </div>
     </div>
