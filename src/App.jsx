@@ -108,37 +108,40 @@ export default function App() {
         </div>
 
         <div className="p-6 md:p-10 space-y-8 flex-grow">
-          {/* 行程資訊 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <p className="text-[10px] text-emerald-700 font-black mb-1 uppercase">參加團名</p>
-              <p className="font-bold text-lg">{userData.group || "---"}</p>
+          
+          {/* 行程資訊 - 已改為立體圖塊 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* 參加團名圖塊 */}
+            <div className="bg-white shadow-md border-l-[6px] border-emerald-600 rounded-xl p-5 flex flex-col justify-center transition-all hover:shadow-lg">
+              <p className="text-[11px] text-emerald-700 font-black mb-1 uppercase tracking-wider">參加團名</p>
+              <p className="font-bold text-xl text-slate-800">{userData.group || "---"}</p>
             </div>
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <p className="text-[10px] text-emerald-700 font-black mb-1 uppercase">參加日期</p>
-              <p className="font-bold text-lg">{userData.date || "---"}</p>
+            
+            {/* 參加日期圖塊 */}
+            <div className="bg-white shadow-md border-l-[6px] border-emerald-600 rounded-xl p-5 flex flex-col justify-center transition-all hover:shadow-lg">
+              <p className="text-[11px] text-emerald-700 font-black mb-1 uppercase tracking-wider">參加日期</p>
+              <p className="font-bold text-xl text-slate-800">{userData.date || "---"}</p>
             </div>
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 md:col-span-2">
-              <p className="text-[10px] text-emerald-700 font-black mb-1 uppercase">證書寄送地址</p>
-              <p className="font-bold leading-relaxed">{userData.address || "---"}</p>
+            
+            {/* 寄送地址圖塊 */}
+            <div className="bg-white shadow-md border-l-[6px] border-emerald-600 rounded-xl p-5 md:col-span-2 flex flex-col justify-center transition-all hover:shadow-lg">
+              <p className="text-[11px] text-emerald-700 font-black mb-1 uppercase tracking-wider">證書寄送地址</p>
+              <p className="font-bold text-lg text-slate-800 leading-relaxed">{userData.address || "---"}</p>
             </div>
           </div>
 
-          {/* 需求 */}
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm font-bold mb-2 text-slate-800 flex items-center">
-                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-2"></span>額外加購項目
-              </p>
-              <div className="bg-white border-2 border-slate-50 p-5 rounded-2xl text-slate-600 text-sm">
+          {/* 需求與備註 - 已改為立體圖塊 */}
+          <div className="space-y-5">
+            <div className="bg-white shadow-md border-l-[6px] border-emerald-400 rounded-xl p-5 transition-all hover:shadow-lg">
+              <p className="text-[11px] font-black text-emerald-600 uppercase tracking-wider">額外加購項目</p>
+              <div className="text-slate-800 font-bold text-base mt-2">
                 {userData.extra_item || "無"}
               </div>
             </div>
-            <div>
-              <p className="text-sm font-bold mb-2 text-slate-800 flex items-center">
-                <span className="w-1.5 h-1.5 bg-orange-500 rounded-full mr-2"></span>特殊需求與備註
-              </p>
-              <div className="bg-orange-50/20 p-5 rounded-2xl text-slate-600 text-sm italic">
+            
+            <div className="bg-white shadow-md border-l-[6px] border-orange-400 rounded-xl p-5 transition-all hover:shadow-lg">
+              <p className="text-[11px] font-black text-orange-600 uppercase tracking-wider">特殊需求與備註</p>
+              <div className="text-slate-800 font-bold text-base mt-2">
                 {userData.requirements || "無特別要求"}
               </div>
             </div>
