@@ -22,7 +22,6 @@ export default function App() {
         const foundUser = data.find(user => String(user.phone).trim() === String(phone).trim());
         if (foundUser) {
           setUserData(foundUser);
-          // 若資料庫已有後五碼紀錄，則直接標示為已送出
           if (foundUser.remit_last_five && foundUser.remit_last_five !== "") {
             setIsRemitSubmitted(true);
           }
@@ -38,7 +37,6 @@ export default function App() {
     setLoading(false);
   };
 
-  // 確認行程狀態
   const handleUpdateStatus = async (status) => {
     const confirmMsg = status === 'Yes' ? "確認所有行程與帳務資料正確，並前往匯款頁面？" : "回報資料有誤並請客服修正？";
     if (!window.confirm(confirmMsg)) return;
@@ -52,7 +50,7 @@ export default function App() {
       });
       if (response.ok) {
         if (status === 'Yes') {
-          setConfirmed(true); // 切換到匯款頁面
+          setConfirmed(true);
         } else {
           alert("已收到回報，我們將儘快處理。");
         }
@@ -63,7 +61,6 @@ export default function App() {
     setLoading(false);
   };
 
-  // 送出匯款後五碼
   const handleSubmitRemittance = async () => {
     if (lastFive.length !== 5) return alert("請輸入完整的帳號後五碼");
     
@@ -75,7 +72,7 @@ export default function App() {
         body: JSON.stringify({ data: { remit_last_five: lastFive } })
       });
       if (response.ok) {
-        setIsRemitSubmitted(true); // 切換到完成頁面
+        setIsRemitSubmitted(true);
       }
     } catch (error) {
       alert("送出失敗，請聯繫管理員。");
@@ -83,7 +80,6 @@ export default function App() {
     setLoading(false);
   };
 
-  // --- 登入介面 ---
   if (!userData) {
     return (
       <div className="min-h-screen bg-slate-200 flex items-center justify-center p-4">
@@ -106,7 +102,6 @@ export default function App() {
     );
   }
 
-  // --- 數值計算 ---
   const n = (val) => {
     if (!val) return 0;
     const num = parseFloat(String(val).replace(/[^0-9.-]/g, ""));
@@ -119,7 +114,6 @@ export default function App() {
   const total_amount = (fee - dis) + add;
   const balance = total_amount - dep;
 
-  // 判斷目前顯示在哪個階段
   const isConfirmedStep = confirmed || userData.confirmed === 'Yes';
   const isDoneStep = isRemitSubmitted;
 
@@ -132,13 +126,9 @@ export default function App() {
           <p className="opacity-60 text-xs tracking-[0.3em] font-light">CUSTOMER ITINERARY & INVOICE</p>
         </div>
 
-        {/* 依照階段渲染不同內容 */}
         {!isConfirmedStep ? (
-          /* =========================================
-             第 1 頁：行程與帳務確認
-             ========================================= */
+          /* 第一頁：行程與帳務確認 */
           <div className="p-6 md:p-10 space-y-10 flex-grow animate-[fadeIn_0.5s_ease-out]">
-            {/* 行程資訊 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="bg-white shadow-md border-l-[6px] border-emerald-600 rounded-xl p-5 hover:shadow-lg transition-all">
                 <p className="text-[11px] text-emerald-700 font-black mb-1 uppercase tracking-wider">參加團名</p>
@@ -149,11 +139,9 @@ export default function App() {
                 <p className="font-bold text-xl text-slate-800">{userData.date || "---"}</p>
               </div>
               
-              {/* 證書寄送地址 (加入條款) */}
               <div className="bg-white shadow-md border-l-[6px] border-emerald-600 rounded-xl p-5 md:col-span-2 hover:shadow-lg transition-all">
                 <p className="text-[11px] text-emerald-700 font-black mb-1 uppercase tracking-wider">證書寄送地址</p>
                 <p className="font-bold text-lg text-slate-800 leading-relaxed">{userData.address || "---"}</p>
-                {/* 提醒條款區塊 */}
                 <div className="mt-3 bg-red-50 text-red-600 text-[13px] font-medium p-3 rounded-lg flex items-start gap-2">
                   <span className="mt-0.5 text-sm">⚠️</span>
                   <p>如果地址錯誤，重寄送郵資需自行負擔，若需變更地址請於寄送前盡快告知。</p>
@@ -161,7 +149,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* 住宿安排 */}
             <div className="space-y-4">
               <p className="text-sm font-bold text-slate-800 flex items-center">
                 <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>住宿安排確認
@@ -178,19 +165,36 @@ export default function App() {
               </div>
             </div>
 
-            {/* 需求與備註 */}
             <div className="space-y-5">
+              {/* 額外加購項目 (更新為多重標籤顯示) */}
               <div className="bg-white shadow-md border-l-[6px] border-emerald-400 rounded-xl p-5 hover:shadow-lg transition-all">
                 <p className="text-[11px] font-black text-emerald-600 uppercase tracking-wider">額外加購項目</p>
-                <div className="text-slate-800 font-bold text-base mt-2">{userData.extra_item || "無"}</div>
+                {(() => {
+                  const itemsStr = userData.extra_item;
+                  if (!itemsStr || itemsStr.trim() === "" || itemsStr === "無") {
+                    return <div className="text-slate-500 font-bold text-base mt-2">無</div>;
+                  }
+                  // 使用逗號或換行符號切割字串
+                  const items = itemsStr.split(/[,，\n]/).filter(item => item.trim() !== "");
+                  return (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {items.map((item, index) => (
+                        <span key={index} className="inline-flex items-center px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-700 font-bold text-sm">
+                          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-2"></span>
+                          {item.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
+
               <div className="bg-white shadow-md border-l-[6px] border-orange-400 rounded-xl p-5 hover:shadow-lg transition-all">
                 <p className="text-[11px] font-black text-orange-600 uppercase tracking-wider">特殊需求與備註</p>
                 <div className="text-slate-800 font-bold text-base mt-2">{userData.requirements || "無特別要求"}</div>
               </div>
             </div>
 
-            {/* 帳務區 */}
             <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-emerald-900/10">
               <div className="space-y-4 text-sm">
                 <div className="flex justify-between opacity-50"><span>基礎團費</span><span>${fee.toLocaleString()}</span></div>
@@ -206,7 +210,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* 操作按鈕 */}
             <div className="flex flex-col gap-4 pt-4">
               <button 
                 onClick={() => handleUpdateStatus('Yes')}
@@ -223,13 +226,10 @@ export default function App() {
           </div>
 
         ) : !isDoneStep ? (
-          /* =========================================
-             第 2 頁：匯款資訊與填寫後五碼
-             ========================================= */
+          /* 第二頁：匯款資訊與填寫後五碼 */
           <div className="p-6 md:p-10 space-y-8 flex-grow flex flex-col items-center animate-[fadeIn_0.5s_ease-out]">
             <h3 className="text-2xl font-bold text-slate-800 mb-2">第二步：請完成尾款匯款</h3>
             
-            {/* 匯款資訊圖塊 */}
             <div className="w-full bg-slate-50 border-2 border-emerald-100 rounded-[2rem] p-8 text-center space-y-6 shadow-sm">
               <div>
                 <p className="text-sm text-slate-500 font-bold mb-2 tracking-widest">待匯款金額</p>
@@ -250,7 +250,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* 後五碼輸入區 */}
             <div className="w-full space-y-4 pt-4">
               <label className="block text-center text-slate-700 font-bold">匯款完成後，請輸入您的帳號<span className="text-emerald-600">後五碼</span></label>
               <input 
@@ -258,7 +257,7 @@ export default function App() {
                 maxLength="5" 
                 placeholder="例如: 12345" 
                 value={lastFive}
-                onChange={(e) => setLastFive(e.target.value.replace(/\D/g, ''))} // 正則表達式限制只能輸入數字
+                onChange={(e) => setLastFive(e.target.value.replace(/\D/g, ''))}
                 className="w-full p-5 border-2 border-slate-200 rounded-2xl text-center focus:border-emerald-500 outline-none text-3xl font-mono tracking-[0.5em] transition-colors"
               />
               <button 
@@ -273,9 +272,7 @@ export default function App() {
           </div>
 
         ) : (
-          /* =========================================
-             第 3 頁：完成畫面
-             ========================================= */
+          /* 第三頁：完成畫面 */
           <div className="p-10 flex-grow flex flex-col items-center justify-center text-center space-y-6 animate-[fadeIn_0.5s_ease-out] min-h-[50vh]">
             <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-5xl mb-4 shadow-inner">
               ✓
