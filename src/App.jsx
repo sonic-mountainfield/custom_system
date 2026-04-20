@@ -148,9 +148,16 @@ export default function App() {
                 <p className="text-[11px] text-emerald-700 font-black mb-1 uppercase tracking-wider">參加日期</p>
                 <p className="font-bold text-xl text-slate-800">{userData.date || "---"}</p>
               </div>
+              
+              {/* 證書寄送地址 (加入條款) */}
               <div className="bg-white shadow-md border-l-[6px] border-emerald-600 rounded-xl p-5 md:col-span-2 hover:shadow-lg transition-all">
                 <p className="text-[11px] text-emerald-700 font-black mb-1 uppercase tracking-wider">證書寄送地址</p>
                 <p className="font-bold text-lg text-slate-800 leading-relaxed">{userData.address || "---"}</p>
+                {/* 提醒條款區塊 */}
+                <div className="mt-3 bg-red-50 text-red-600 text-[13px] font-medium p-3 rounded-lg flex items-start gap-2">
+                  <span className="mt-0.5 text-sm">⚠️</span>
+                  <p>如果地址錯誤，重寄送郵資需自行負擔，若需變更地址請於寄送前盡快告知。</p>
+                </div>
               </div>
             </div>
 
