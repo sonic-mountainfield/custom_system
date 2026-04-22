@@ -7,12 +7,10 @@ export default function App() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
   
-  // 狀態管理：行程是否確認、後五碼輸入、是否已送出匯款資訊
   const [confirmed, setConfirmed] = useState(false);
   const [lastFive, setLastFive] = useState('');
   const [isRemitSubmitted, setIsRemitSubmitted] = useState(false);
 
-  // ====== 這次新增的 State：控制錯誤回報視窗與內容 ======
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [errorText, setErrorText] = useState('');
 
@@ -41,7 +39,6 @@ export default function App() {
     setLoading(false);
   };
 
-  // 處理「確認無誤」的動作
   const handleUpdateStatus = async (status) => {
     if (!window.confirm("確認所有行程與帳務資料正確，並前往匯款頁面？")) return;
     
@@ -61,7 +58,6 @@ export default function App() {
     setLoading(false);
   };
 
-  // ====== 這次新增的函式：處理表單送出的錯誤回報 ======
   const handleReportError = async () => {
     if (!errorText.trim()) return alert("請輸入您遇到的問題或錯誤資料！");
     
@@ -70,14 +66,13 @@ export default function App() {
       const response = await fetch(`${API_URL}/phone/${userData.phone}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        // 注意：這裡假設你的 Google Sheet 有一個欄位叫 'error_message'，用來存錯誤訊息
         body: JSON.stringify({ data: { confirmed: 'Error', error_message: errorText } })
       });
       
       if (response.ok) {
         alert("已收到您的回報！客服人員將會盡快為您修正。");
-        setIsErrorModalOpen(false); // 關閉視窗
-        setErrorText(''); // 清空輸入框
+        setIsErrorModalOpen(false);
+        setErrorText('');
       }
     } catch (error) {
       alert("回報送出失敗，請聯繫管理員。");
@@ -144,11 +139,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-100 p-4 md:p-8 flex justify-center text-slate-700 font-sans relative">
       
-      {/* ====== 彈出視窗 (Error Modal) ====== */}
       {isErrorModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
           <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md p-6 md:p-8 relative">
-            {/* 關閉按鈕 (右上角叉叉) */}
             <button
               onClick={() => setIsErrorModalOpen(false)}
               className="absolute top-5 right-6 text-slate-400 hover:text-slate-700 text-xl font-bold"
@@ -185,17 +178,14 @@ export default function App() {
           </div>
         </div>
       )}
-      {/* ================================== */}
 
       <div className="max-w-2xl w-full bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col">
-        {/* Header */}
         <div className="bg-emerald-800 p-10 text-white text-center transition-all">
           <h2 className="text-3xl font-bold mb-2">親愛的 {userData.name}</h2>
           <p className="opacity-60 text-xs tracking-[0.3em] font-light">CUSTOMER ITINERARY & INVOICE</p>
         </div>
 
         {!isConfirmedStep ? (
-          /* 第一頁：行程與帳務確認 */
           <div className="p-6 md:p-10 space-y-10 flex-grow animate-[fadeIn_0.5s_ease-out]">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="bg-white shadow-md border-l-[6px] border-emerald-600 rounded-xl p-5 hover:shadow-lg transition-all">
@@ -234,7 +224,6 @@ export default function App() {
             </div>
 
             <div className="space-y-5">
-              {/* 額外加購項目 (更新為多重標籤顯示) */}
               <div className="bg-white shadow-md border-l-[6px] border-emerald-400 rounded-xl p-5 hover:shadow-lg transition-all">
                 <p className="text-[11px] font-black text-emerald-600 uppercase tracking-wider">額外加購項目</p>
                 {(() => {
@@ -286,7 +275,6 @@ export default function App() {
                 {loading ? "處理中..." : "核對無誤，前往匯款"}
               </button>
               
-              {/* ====== 修改了這個按鈕：點擊後改為打開視窗 ====== */}
               <button onClick={() => setIsErrorModalOpen(true)} className="w-full py-2 text-slate-400 font-bold text-sm hover:text-red-500 transition-colors">
                 資料有誤？點此告知客服修正
               </button>
@@ -295,7 +283,6 @@ export default function App() {
           </div>
 
         ) : !isDoneStep ? (
-          /* 第二頁：匯款資訊與填寫後五碼 (省略修改，維持原樣) */
           <div className="p-6 md:p-10 space-y-8 flex-grow flex flex-col items-center animate-[fadeIn_0.5s_ease-out]">
             <h3 className="text-2xl font-bold text-slate-800 mb-2">第二步：請完成尾款匯款</h3>
             
@@ -341,7 +328,6 @@ export default function App() {
           </div>
 
         ) : (
-          /* 第三頁：完成畫面 (維持原樣) */
           <div className="p-10 flex-grow flex flex-col items-center justify-center text-center space-y-6 animate-[fadeIn_0.5s_ease-out] min-h-[50vh]">
             <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-5xl mb-4 shadow-inner">
               ✓
